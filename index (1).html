@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quiz Land 🎉</title>
+<style>
+:root { color-scheme: light; --fg: #2b2d42; --accent: #ff6b6b; --accent2: #4ecdc4; --accent3: #ffd166; }
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+*, *::before, *::after { box-sizing: inherit; }
+html, body { margin: 0; min-height: 100%; font-family: "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", system-ui, sans-serif; color: var(--fg); overflow-x: hidden; }
+body {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: linear-gradient(135deg, #a8e6ff, #ffd6f0, #fff3b0, #b8ffd1);
+  background-size: 400% 400%; animation: bgShift 12s ease infinite;
+}
+@keyframes bgShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+.card {
+  position: relative; z-index: 1; background: #fff; width: 100%; max-width: 440px; padding: 28px 24px;
+  border-radius: 24px; box-shadow: 0 12px 0 rgba(43,45,66,0.15), 0 20px 40px rgba(0,0,0,0.12);
+  text-align: center; border: 3px solid var(--fg);
+}
+.enter { animation: pop 0.5s cubic-bezier(.2,1.6,.4,1); }
+@keyframes pop { from { transform: scale(0.6) rotate(-4deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+.slide-in { animation: slideIn 0.4s ease; }
+@keyframes slideIn { from { transform: translateX(60px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.mascot { font-size: 72px; display: inline-block; animation: float 2.5s ease-in-out infinite; transform-origin: 50% 80%; }
+@keyframes float { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
+.wobble { animation: wobble 0.6s ease; }
+@keyframes wobble { 0%,100% { transform: rotate(0); } 20% { transform: rotate(-15deg); } 40% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 80% { transform: rotate(4deg); } }
+
+h1 { font-size: 26px; margin: 8px 0 4px; }
+.bounce { display: inline-block; animation: bounce 1.4s ease-in-out infinite; }
+.bounce:nth-child(2) { animation-delay: 0.1s; }
+.bounce:nth-child(3) { animation-delay: 0.2s; }
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+.sub { font-size: 15px; opacity: 0.75; margin: 0 0 18px; }
+input {
+  width: 100%; padding: 13px 14px; margin: 7px 0; font-size: 16px; font-family: inherit;
+  border: 3px solid #e0e6f0; border-radius: 14px; outline: none; transition: border-color .2s, transform .2s;
+}
+input:focus { border-color: var(--accent2); transform: scale(1.02); }
+
+button {
+  width: 100%; padding: 13px; margin-top: 10px; font-size: 17px; font-weight: 700; font-family: inherit;
+  color: #fff; background: var(--accent); border: 3px solid var(--fg); border-radius: 14px; cursor: pointer;
+  box-shadow: 0 5px 0 var(--fg); transition: transform .1s, box-shadow .1s;
+}
+button:hover { filter: brightness(1.05); }
+button:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--fg); }
+
+.opt { background: #fff; color: var(--fg); }
+.opt:nth-child(1) { background: #ffe0e0; }
+.opt:nth-child(2) { background: #d9f7f4; }
+.opt:nth-child(3) { background: #fff3c4; }
+.opt:nth-child(4) { background: #e5dcff; }
+.opt:hover { transform: translateY(-3px) rotate(-1deg); }
+
+.shake { animation: shake 0.4s; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(10px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+
+.err { color: #e63946; font-weight: 700; font-size: 14px; min-height: 22px; margin-top: 8px; }
+.progress { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.bar { height: 14px; background: #e9ecf3; border-radius: 99px; overflow: hidden; border: 2px solid var(--fg); margin-bottom: 14px; }
+.bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent3), var(--accent)); transition: width .5s ease; }
+
+.cert {
+  border: 4px dashed #d4a017; background: #fffbe6; padding: 18px; margin-top: 12px; border-radius: 14px;
+  transform: rotate(-2deg); animation: pop .6s .2s both;
+}
+.cert h2 { margin: 0 0 6px; font-size: 20px; color: #b7791f; }
+.cert p { margin: 6px 0; font-size: 14px; }
+
+.confetti { position: fixed; top: -20px; z-index: 5; pointer-events: none; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+.hidden { display: none !important; }
+
+/* Login card: extra-lively treatment */
+#login { overflow: visible; }
+#login::before {
+  content: ""; position: absolute; inset: -10px; z-index: -1; border-radius: 34px;
+  background: conic-gradient(from 0deg, #ff6b6b, #ffd166, #4ecdc4, #a78bfa, #ff6b6b);
+  filter: blur(14px); opacity: .75; animation: spin 6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#login .sparkles { position: absolute; inset: 0; pointer-events: none; }
+#login .sparkles span {
+  position: absolute; font-size: 22px; animation: twinkle 2.2s ease-in-out infinite;
+}
+#login .sparkles span:nth-child(1) { top: -14px; left: 12%; }
+#login .sparkles span:nth-child(2) { top: 10%; right: -14px; animation-delay: .4s; }
+#login .sparkles span:nth-child(3) { bottom: 18%; left: -14px; animation-delay: .8s; }
+#login .sparkles span:nth-child(4) { bottom: -12px; right: 16%; animation-delay: 1.2s; }
+@keyframes twinkle { 0%,100% { transform: scale(1) rotate(0); opacity: .6; } 50% { transform: scale(1.35) rotate(20deg); opacity: 1; } }
+#login h1 {
+  background: linear-gradient(90deg, #ff6b6b, #ffd166, #4ecdc4, #a78bfa, #ff6b6b);
+  background-size: 300% auto; -webkit-background-clip: text; background-clip: text;
+  color: transparent; animation: shimmer 4s linear infinite;
+}
+@keyframes shimmer { to { background-position: 300% center; } }
+#login input:focus { box-shadow: 0 0 0 4px rgba(78,205,196,.35); }
+#login button { background: linear-gradient(135deg, var(--accent), #ff9f43); }
+@media (prefers-reduced-motion: reduce) {
+  #login::before, #login .sparkles span, #login h1 { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="card enter" id="login">
+  <div class="sparkles" aria-hidden="true"><span>✨</span><span>🌟</span><span>💫</span><span>🎈</span></div>
+  <div class="mascot" id="loginMascot">🐵</div>
+  <h1><span class="bounce">Welcome</span> <span class="bounce">to</span> <span class="bounce">Quiz</span> <span class="bounce">Land!</span></h1>
+  <p class="sub">Log in to start the adventure 🚀</p>
+  <input id="user" type="text" placeholder="👤 Username" autocomplete="off">
+  <input id="pass" type="password" placeholder="🔒 Password">
+  <button id="loginBtn">Let's Go! ✨</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div class="card hidden" id="quiz">
+  <div class="mascot" id="quizMascot">🦊</div>
+  <div class="progress" id="progress"></div>
+  <div class="bar"><div id="barFill"></div></div>
+  <h1 id="question"></h1>
+  <div id="options"></div>
+</div>
+
+<div class="card hidden" id="reveal">
+  <div class="mascot">🤣</div>
+  <h1><span class="bounce">YOU'VE</span> <span class="bounce">BEEN</span> <span class="bounce">PRANKED!</span></h1>
+  <p class="sub">Nice try, but this quiz was never going to judge you 😜</p>
+  <div class="cert">
+    <h2>🏆 Certificate of Excellence 🏆</h2>
+    <p>Awarded for surviving the most official-looking quiz on the internet.</p>
+    <p><strong id="finalNote"></strong></p>
+  </div>
+  <button id="again">Play Again 🔁</button>
+</div>
+
+<script>
+const USER = 'czns';
+const PASS = '11223344';
+
+const questions = [
+  { q: "🍿 What's your favorite snack?", o: ["🥔 Chips", "🍫 Chocolate", "🥟 Pani puri", "🆓 Whatever is free"] },
+  { q: "💃 Who would win a dance-off?", o: ["😎 You", "🕺 Me", "🐈 The neighbor's cat", "🤸 Nobody, we'd both fall over"] },
+  { q: "🦸 Your superpower would be?", o: ["👻 Invisibility", "🧊 Teleporting to the fridge", "🐦 Talking to animals", "🎮 Never losing a game"] },
+  { q: "🎤 Pick a karaoke song:", o: ["😢 Something emotional", "📢 Something loud", "❓ Something I don't know the words to", "👥 Whatever the crowd demands"] },
+  { q: "📝 Which group project role fits you?", o: ["🛌 The one who does nothing", "🔧 The one who fixes everything", "🖼️ The one who makes memes", "🏅 The one who takes the credit"] },
+];
+
+const mascots = ['🦊', '🐼', '🐸', '🦄', '🐙'];
+let step = 0, answers = [];
+
+const $ = id => document.getElementById(id);
+
+function showScreen(id) {
+  ['login', 'quiz', 'reveal'].forEach(s => $(s).classList.add('hidden'));
+  const el = $(id);
+  el.classList.remove('hidden', 'slide-in', 'enter');
+  void el.offsetWidth; // restart animation
+  el.classList.add(id === 'login' ? 'enter' : 'slide-in');
+}
+
+function wrongLogin() {
+  const card = $('login');
+  card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+  const m = $('loginMascot');
+  m.classList.remove('wobble'); void m.offsetWidth; m.classList.add('wobble');
+  m.textContent = '🙈';
+  setTimeout(() => m.textContent = '🐵', 900);
+}
+
+$('loginBtn').onclick = () => {
+  if ($('user').value === USER && $('pass').value === PASS) {
+    $('loginErr').textContent = '';
+    $('loginBtn').textContent = 'Loading... 🌀';
+    setTimeout(() => {
+      $('loginBtn').textContent = "Let's Go! ✨";
+      startQuiz();
+    }, 600);
+  } else {
+    $('loginErr').textContent = '❌ Oops! Wrong username or password.';
+    wrongLogin();
+  }
+};
+$('pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+
+function startQuiz() {
+  step = 0; answers = [];
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = questions[step];
+  $('progress').textContent = `Question ${step + 1} of ${questions.length} 🌟`;
+  $('barFill').style.width = (step / questions.length * 100) + '%';
+  $('quizMascot').textContent = mascots[step % mascots.length];
+  $('question').textContent = item.q;
+  const box = $('options');
+  box.innerHTML = '';
+  item.o.forEach(text => {
+    const b = document.createElement('button');
+    b.textContent = text;
+    b.className = 'opt';
+    b.onclick = () => choose(text);
+    box.appendChild(b);
+  });
+}
+
+function choose(answer) {
+  answers.push(answer);
+  step++;
+  if (step < questions.length) {
+    $('quiz').classList.remove('slide-in'); void $('quiz').offsetWidth; $('quiz').classList.add('slide-in');
+    renderQuestion();
+  } else {
+    $('barFill').style.width = '100%';
+    setTimeout(finish, 400);
+  }
+}
+
+function finish() {
+  const pick = answers[answers.length - 1];
+  $('finalNote').textContent = `You picked "${pick}". Score: 100/100 (we don't check answers 😉)`;
+  showScreen('reveal');
+  confettiBurst();
+}
+
+function confettiBurst() {
+  const pieces = ['🎉', '🎊', '⭐', '✨', '🤣', '🎈', '💥'];
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'confetti';
+    s.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = (16 + Math.random() * 20) + 'px';
+    s.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+    s.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 5000);
+  }
+}
+
+$('again').onclick = () => {
+  $('user').value = '';
+  $('pass').value = '';
+  $('loginErr').textContent = '';
+  showScreen('login');
+};
+</script>
+</body>
+</html>
